@@ -1,73 +1,37 @@
 import { useEffect, useState } from "react";
+import { getMe } from "../api/users";
+import { logout } from "../api/auth";
 
 export default function MainPage() {
   const [status, setStatus] = useState("로그인 상태 확인 중...");
   const [me, setMe] = useState(null);
 
   useEffect(() => {
-    const fetchMe = async () => {
-      try {
-        setError(null);
+    (async () => {
+      const res = await getMe();
 
-        let res = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/api/users/me`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
-
-        if (res.status === 401) {
-          const refreshRes = await fetch(
-            `${import.meta.env.VITE_SERVER_URL}/api/auth/refresh`,
-            {
-              method: "POST",
-              credentials: "include",
-            }
-          );
-
-          // refresh 성공 → me 재시도
-          if (refreshRes.ok) {
-            res = await fetch(
-              `${import.meta.env.VITE_SERVER_URL}/api/users/me`,
-              {
-                method: "GET",
-                credentials: "include",
-              }
-            );
-          }
-        }
-
-        if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(text || `HTTP ${res.status}`);
-        }
-
+      if (res.ok) {
         const data = await res.json();
         setMe(data);
-        setStatus("로그인됨");
-      } catch (err) {
-        setMe(null);
-        setStatus("로그인 필요");
-        setError(err?.message || "알 수 없는 에러");
+        setStatus("회원");
+        return;
       }
-    };
 
-    fetchMe();
+      if (res.status === 401) {
+        setMe(null);
+        setStatus("게스트");
+        return;
+      }
+
+      setStatus(`ERROR_${res.status}`);
+    })();
   }, []);
 
   const handleLogout = async () => {
     try {
       setStatus("로그아웃 요청 중...");
-      setError(null);
 
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/api/auth/logout`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const res = await logout();
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
@@ -75,10 +39,9 @@ export default function MainPage() {
       }
 
       setMe(null);
-      setStatus("로그아웃됨");
+      setStatus("게스트");
     } catch (err) {
       setStatus("로그아웃 실패");
-      setError(err?.message || "알 수 없는 에러");
     }
   };
 

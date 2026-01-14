@@ -54,6 +54,18 @@ export default function KakaoCallback() {
         );
 
         if (!res.ok) {
+          const body = await res.text();
+
+          if (res.status == 404) {
+            navigate("/register", {
+              replace: true,
+              state: {
+                errorBody: body,
+                status: res.status,
+              },
+            });
+            return;
+          }
           const text = await res.text();
           throw new Error(text || `HTTP ${res.status}`);
         }

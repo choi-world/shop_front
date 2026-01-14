@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import KakaoCallback from "./pages/KakaoCallback";
 import NaverCallback from "./pages/NaverCallback";
 import MainPage from "./pages/MainPage";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <Route path="/auth/kakao/callback" element={<KakaoCallback />} />
       <Route path="/auth/naver/callback" element={<NaverCallback />} />
       <Route path="*" element={<div style={{ padding: 24 }}>Not Found</div>} />
+      <Route path="/register" element={<Register />} />
     </Routes>
   );
 }
